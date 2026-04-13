@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Stückliste Compare App</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h1>Comparador de Stückliste por Modelo</h1>
+
+  <label>Modelo de vehículo:</label>
+  <select id="modelSelect"></select>
+
+  <label>Columna:</label>
+  <select id="columnSelect"></select>
+
+  <label>Valor a filtrar:</label>
+  <input type="text" id="filterValue">
+
+  <div id="tableContainer"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
