@@ -1,81 +1,83 @@
-
 let allData = [];
 let columns = [];
 
 const modelSelect = document.getElementById("modelSelect");
-const columnSelect = document.getElementById("columnSelect");
-const filterInput = document.getElementById("filterValue");
 const tableContainer = document.getElementById("tableContainer");
 
+// Cargar modelos en el selector
 Object.keys(VEHICLE_MODELS).forEach(model => {
-  const opt = document.createElement("option");
-  opt.value = model;
-  opt.textContent = model;
-  modelSelect.appendChild(opt);
+  const option = document.createElement("option");
+  option.value = model;
+  option.textContent = model;
+  modelSelect.appendChild(option);
 });
 
+// Al cambiar de modelo → cargar Excel
 modelSelect.addEventListener("change", loadModel);
-columnSelect.addEventListener("change", renderTable);
-filterInput.addEventListener("input", renderTable);
 
 async function loadModel() {
   const model = modelSelect.value;
   if (!model) return;
 
-  const response = await fetch(VEHICLE_MODELS[model]);
-  const arrayBuffer = await response.arrayBuffer();
-  const workbook = XLSX.read(arrayBuffer, { type: "array" });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  tableContainer.innerHTML = "Cargando Excel...";
 
-  allData = XLSX.utils.sheet_to_json(sheet);
-  columns = Object.keys(allData[0] || {});
+  try {
+    const response = await fetch(VEHICLE_MODELS[model]);
+    const arrayBuffer = await response.arrayBuffer();
 
-  loadColumns();
-  renderTable();
-}
+    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-function loadColumns() {
-  columnSelect.innerHTML = "<option value=''>-- Seleccionar --</option>";
-  columns.forEach(col => {
-    const opt = document.createElement("option");
-    opt.value = col;
-    opt.textContent = col;
-    columnSelect.appendChild(opt);
-  });
+    // ✅ TODAS las filas
+    allData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+    // ✅ Columnas detectadas automáticamente
+    columns = Object.keys(allData[0] || {});
+
+    renderTable();
+  } catch (error) {
+    tableContainer.innerHTML = "❌ Error cargando el Excel";
+    console.error(error);
+  }
 }
 
 function renderTable() {
   tableContainer.innerHTML = "";
-  if (!allData.length) return;
 
-  const selectedColumn = columnSelect.value;
-  const filterValue = filterInput.value;
+  if (!allData.length) {
+    tableContainer.innerHTML = "⚠️ El Excel no tiene filas";
+    return;
+  }
 
   const table = document.createElement("table");
+  table.border = "1";
+  table.cellPadding = "4";
+
+  // Cabecera
   const thead = document.createElement("thead");
-  const trh = document.createElement("tr");
+  const headerRow = document.createElement("tr");
 
   columns.forEach(col => {
     const th = document.createElement("th");
     th.textContent = col;
-    trh.appendChild(th);
+    headerRow.appendChild(th);
   });
 
-  thead.appendChild(trh);
+  thead.appendChild(headerRow);
   table.appendChild(thead);
 
+  // Cuerpo
   const tbody = document.createElement("tbody");
 
   allData.forEach(row => {
     const tr = document.createElement("tr");
+
     columns.forEach(col => {
       const td = document.createElement("td");
-      td.textContent = row[col] ?? "";
-      if (selectedColumn) {
-        td.className = String(row[col]) === filterValue ? "match" : "no-match";
-      }
+      td.textContent = row[col];
       tr.appendChild(td);
     });
+
     tbody.appendChild(tr);
   });
 
