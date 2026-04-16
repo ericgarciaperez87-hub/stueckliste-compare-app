@@ -29,7 +29,7 @@ async function loadModel() {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
     // ✅ TODAS las filas
-    allData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    allData = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
 
     // ✅ Columnas detectadas automáticamente
     columns = Object.keys(allData[0] || {});
