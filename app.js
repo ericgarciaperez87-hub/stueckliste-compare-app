@@ -1,6 +1,14 @@
 let allData = [];
 let columns = [];
 
+function formatDate(value) {
+  if (typeof value === "number") {
+    const date = XLSX.SSF.parse_date_code(value);
+    return `${String(date.d).padStart(2,'0')}/${String(date.m).padStart(2,'0')}/${date.y}`;
+  }
+  return value;
+}
+
 const modelSelect = document.getElementById("modelSelect");
 const tableContainer = document.getElementById("tableContainer");
 
@@ -74,7 +82,7 @@ function renderTable() {
 
     columns.forEach(col => {
       const td = document.createElement("td");
-      td.textContent = row[col];
+      td.textContent = formatDate(row[col]);
       tr.appendChild(td);
     });
 
