@@ -19,7 +19,7 @@ async function loadModel() {
   const model = modelSelect.value;
   if (!model) return;
 
-  tableContainer.innerHTML = "Cargando Excel...";
+  tableContainer.innerHTML = "Cargando...";
 
   try {
     const response = await fetch(VEHICLE_MODELS[model]);
