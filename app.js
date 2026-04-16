@@ -2,11 +2,20 @@ let allData = [];
 let columns = [];
 
 function formatDate(value) {
-  if (typeof value === "number") {
-    const date = XLSX.SSF.parse_date_code(value);
-    return `${String(date.d).padStart(2,'0')}/${String(date.m).padStart(2,'0')}/${date.y}`;
+  if (!value) return "";
+
+  // Si ya está en DD/MM/AAAA → no tocar
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+    return value;
   }
-  return value;
+
+  // Si viene en YYYY-MM-DD (a veces pasa)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  return value; // fallback
 }
 
 const modelSelect = document.getElementById("modelSelect");
@@ -37,7 +46,7 @@ async function loadModel() {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
     // ✅ TODAS las filas
-    allData = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+    allData = XLSX.utils.sheet_to_json(sheet, {defval: "", raw: false });
 
     // ✅ Columnas detectadas automáticamente
     columns = Object.keys(allData[0] || {});
