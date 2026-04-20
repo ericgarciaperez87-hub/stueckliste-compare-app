@@ -1,4 +1,3 @@
-
 let allData = [];
 let columns = [];
 
