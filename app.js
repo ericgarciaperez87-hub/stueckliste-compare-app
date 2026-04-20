@@ -1,6 +1,9 @@
 let allData = [];
 let columns = [];
 
+/* =========================
+   Formateo de fechas
+   ========================= */
 function formatDate(value) {
   if (!value) return "";
 
@@ -9,7 +12,7 @@ function formatDate(value) {
     return value;
   }
 
-  // Si viene en YYYY-MM-DD (a veces pasa)
+  // Si viene en YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     const [y, m, d] = value.split("-");
     return `${d}/${m}/${y}`;
@@ -21,7 +24,9 @@ function formatDate(value) {
 const modelSelect = document.getElementById("modelSelect");
 const tableContainer = document.getElementById("tableContainer");
 
-// Cargar modelos en el selector
+/* =========================
+   Cargar modelos en selector
+   ========================= */
 Object.keys(VEHICLE_MODELS).forEach(model => {
   const option = document.createElement("option");
   option.value = model;
@@ -29,9 +34,14 @@ Object.keys(VEHICLE_MODELS).forEach(model => {
   modelSelect.appendChild(option);
 });
 
-// Al cambiar de modelo → cargar Excel
+/* =========================
+   Cambio de modelo
+   ========================= */
 modelSelect.addEventListener("change", loadModel);
 
+/* =========================
+   Cargar CSV (ANTES Excel)
+   ========================= */
 async function loadModel() {
   const model = modelSelect.value;
   if (!model) return;
@@ -39,65 +49,25 @@ async function loadModel() {
   tableContainer.innerHTML = "Cargando...";
 
   try {
+    // ✅ CSV → se lee como TEXTO, no como ArrayBuffer
     const response = await fetch(VEHICLE_MODELS[model]);
-    const arrayBuffer = await response.arrayBuffer();
+    const csvText = await response.text();
 
-    const workbook = XLSX.read(arrayBuffer, { type: "array" });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    // ✅ Parsear CSV correctamente
+    Papa.parse(csvText, {
+      header: true,          // usa la primera fila como cabecera
+      skipEmptyLines: true,  // ignora líneas vacías
+      delimiter: ";",        // ⚠️ típico en CSV exportado desde Excel ES
 
-    // ✅ TODAS las filas
-    allData = XLSX.utils.sheet_to_json(sheet, {defval: "", raw: false });
+      complete: (results) => {
+        allData = results.data;
 
-    // ✅ Columnas detectadas automáticamente
-    columns = Object.keys(allData[0] || {});
+        // Si el CSV está vacío
+        if (!allData.length) {
+          tableContainer.innerHTML = "⚠️ El CSV no tiene filas";
+          return;
+        }
 
-    renderTable();
-  } catch (error) {
-    tableContainer.innerHTML = "❌ Error cargando el Excel";
-    console.error(error);
-  }
-}
-
-function renderTable() {
-  tableContainer.innerHTML = "";
-
-  if (!allData.length) {
-    tableContainer.innerHTML = "⚠️ El Excel no tiene filas";
-    return;
-  }
-
-  const table = document.createElement("table");
-  table.border = "1";
-  table.cellPadding = "4";
-
-  // Cabecera
-  const thead = document.createElement("thead");
-  const headerRow = document.createElement("tr");
-
-  columns.forEach(col => {
-    const th = document.createElement("th");
-    th.textContent = col;
-    headerRow.appendChild(th);
-  });
-
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  // Cuerpo
-  const tbody = document.createElement("tbody");
-
-  allData.forEach(row => {
-    const tr = document.createElement("tr");
-
-    columns.forEach(col => {
-      const td = document.createElement("td");
-      td.textContent = formatDate(row[col]);
-      tr.appendChild(td);
-    });
-
-    tbody.appendChild(tr);
-  });
-
-  table.appendChild(tbody);
-  tableContainer.appendChild(table);
-}
+        // ✅ Limpieza básica (muy importante en CSV)
+        allData = allData.map(row => {
+          const cleanRow = {};
