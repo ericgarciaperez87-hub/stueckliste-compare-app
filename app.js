@@ -1,3 +1,4 @@
+
 let allData = [];
 let columns = [];
 
@@ -71,3 +72,73 @@ async function loadModel() {
         // ✅ Limpieza básica (muy importante en CSV)
         allData = allData.map(row => {
           const cleanRow = {};
+          Object.keys(row).forEach(key => {
+            cleanRow[key.trim()] = row[key]?.trim() || "";
+          });
+          return cleanRow;
+        });
+
+        // ✅ Detectar columnas automáticamente
+        columns = Object.keys(allData[0]);
+
+        renderTable();
+      },
+
+      error: (error) => {
+        tableContainer.innerHTML = "❌ Error leyendo el CSV";
+        console.error(error);
+      }
+    });
+
+  } catch (error) {
+    tableContainer.innerHTML = "❌ Error cargando el CSV";
+    console.error(error);
+  }
+}
+
+/* =========================
+   Renderizar tabla
+   ========================= */
+function renderTable() {
+  tableContainer.innerHTML = "";
+
+  if (!allData.length) {
+    tableContainer.innerHTML = "⚠️ El CSV no tiene filas";
+    return;
+  }
+
+  const table = document.createElement("table");
+  table.border = "1";
+  table.cellPadding = "4";
+
+  /* ---- Cabecera ---- */
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  columns.forEach(col => {
+    const th = document.createElement("th");
+    th.textContent = col;
+    headerRow.appendChild(th);
+  });
+
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  /* ---- Cuerpo ---- */
+  const tbody = document.createElement("tbody");
+
+  allData.forEach(row => {
+    const tr = document.createElement("tr");
+
+    columns.forEach(col => {
+      const td = document.createElement("td");
+      td.textContent = formatDate(row[col]);
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  tableContainer.appendChild(table);
+}
