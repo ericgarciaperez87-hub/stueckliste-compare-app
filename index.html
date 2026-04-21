@@ -2,21 +2,24 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Comparador CSV</title>
+  <title>Lector de CSV por modelo</title>
+
+  <!-- PapaParse -->
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
+  <h1>Lector de CSV</h1>
 
-  <select id="modelSelect">
-    <option value="">Selecciona modelo</option>
-  </select>
+  <input
+    type="file"
+    webkitdirectory
+    multiple
+    accept=".csv"
+    id="folderInput"
+  />
 
-  <div id="tableContainer"></div>
+  <pre id="log"></pre>
 
-  <!-- ✅ 1. PAPAPARSE (SIEMPRE ANTES) -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-  <!-- ✅ 2. TU CÓDIGO -->
   <script src="app.js"></script>
-
 </body>
 </html>
